@@ -5,13 +5,14 @@ install.packages("MASS")
 install.packages("alr3")
 install.packages("car")
 install.packages("Hmisc")
+install.packages("xtable)
 
 library(lattice)
 library(MASS)
 library(alr3)
 library(car)
 library(Hmisc)
-
+library(xtable)
 
 
 #Describing the relationship between Forced Expiratory Volume (FEV) and  Height
@@ -35,6 +36,8 @@ newboy <- data.frame(Height=200)
 
 #The observed FEV is outside of what would be expected (FEV = 4.539 to 5.368), which suggests lung-related difficulty
 predict(fevmod, newboy, interval="prediction")
+
+
 
 
 #Examining the relationship between birthweight and number of cigarettes smoked by mothers
@@ -63,6 +66,8 @@ abline(chdsmod)
 #Confidence interval for the slope is negative (-0.017386) and interval does not contain zero, suggesting the slope is something other than zero.
 #The significant p-value indicates the number of cigarettes is statistically significant factor, but the low R squared indicates the relationship is not strong.
 confint(chdsmod)
+
+
 
 
 #FEV study from Rosnver statistics book measuring the respiratory function including factors such as smoking, gender, age, and height
@@ -125,6 +130,28 @@ modfull <- lm(maxfwt ~ age + sex + ld72 + ld73, data=lead)
 summary(modfull)
 anova(modnone, modfull)
 
+
+
+
+#Examining the growth of fish 
+fish <- read.csv("newfish.csv")
+
+#Plot of High vs Low temperature lengths over time and shows Hight temp has a faster growth
+with(fish, plot(age, len, type = "n", xlab = "Age", ylab = "Length"))
+with(fish, text(age, len, ifelse(fish$temp == 1, "H", "L")))
+
+fishsep <- nls(len ~ (k + k1 * temp)/(1 + (((k + k1 * temp)- (no + n1 * temp))/(no + n1 * temp)) * exp((-r1 * temp - r0)* age)), data=fish, start = list(k = 4600, no = 400, r1 = 0.01, r0 = 0.045, k1 = 0, n1 = 0))
+summary(fishsep)
+
+#Shows evidence that the change in growth rate beyond the growth of temp is significantly greater than zero.
+#The confidence interval for the k1 adult length parameter also incates there is no evidence that the adult growth is difference for the two groups
+confint(fishsep)
+
+#There is substantial evidence due to the p-value being 5.52e^-13 to doubt the null hypothesis that a single growth function is appropriate for both temperature groups
+#There is evidence to support the null hupothesis that separate growth curves are needed for each group.
+fishmod <- nls(len ~ k/(1 + ((k - no)/no) * exp(-r * age)), data=fish, start = list(k = 4600, no = 400, r = 0.1))
+summary(fishmod)
+anova(fishmod, fishsep)
 
 
 
